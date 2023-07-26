@@ -1,0 +1,93 @@
+﻿@page "/Presentaciones"
+
+@using BlazorCrud.Shared;
+@using CurrieTechnologies.Razor.SweetAlert2;
+@using BlazorCrud.Client.Services;
+
+@inject SweetAlertService Swal;
+@inject IPresentacionService presentacionService;
+
+
+<h3>Presentaciones</h3>
+
+<a class="btn btn-success btn-sm mb-3" href="Presentacion">Nueva Presentacion</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>presentacion ID</th>
+            <th>nombre </th>
+            <th>descripcion</th>
+        </tr>
+    </thead>
+    <tbody>
+
+        @if (listapresentaciones == null)
+        {
+            
+            <tr>
+                <td colspan="3" align="center">
+                    <img style="width:50px" src="https: //media.tenor.com/On7kvXhzml4AAAAj/loading-gif.gif" />
+                </td>
+            </tr>
+
+        }
+        else
+        {
+            @foreach(var item in listapresentaciones)
+            {
+                <tr>
+                    <td>@item.PresentacionId</td>
+                    <td>@item.NombrePresent</td>
+                    <td>@item.DescripcionPresent</td>
+                    <td>
+
+                        <a class="btn btn-primary btn-sm" href="presentacion/@item.PresentacionId">
+                            <i class="oi oi-pencil"></i>
+                        </a>
+                        <a>
+                            <button type="button" class="btn btn-danger btn-sm ms-2" @onclick="(() =>Eliminar(item.PresentacionId))">
+                                <i class="oi oi-trash"></i>
+                            </button>
+                        </a>
+
+                    </td>
+
+                </tr>
+            }
+        }
+
+    </tbody>
+</table>
+
+@code {
+
+    List<PresentacionDTO>? listapresentaciones = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        listapresentaciones = await presentacionService.Lista();
+    }
+
+    private async Task Eliminar(int id)
+    {
+        var resultado = await Swal.FireAsync(new SweetAlertOptions
+        {
+            Title = "Eliminar Presentacion",
+            Text = "Deseas Eliminar la Presentacion?",
+            Icon = SweetAlertIcon.Question,
+            ShowCancelButton = true
+        });
+
+        if(resultado.IsConfirmed)
+        {
+            var eliminado = await presentacionService.Eliminar(id);
+
+            if (eliminado)
+                listapresentaciones = listapresentaciones!.FindAll(e=>e.PresentacionId != id);
+        }
+
+
+    }
+
+}

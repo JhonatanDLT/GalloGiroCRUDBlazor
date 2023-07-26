@@ -1,0 +1,78 @@
+﻿@page "/presentacion"
+@page "/presentacion/{presentacionIdEditar:int}"
+
+@using BlazorCrud.Shared;
+@using BlazorCrud.Client.Services;
+
+@inject IPresentacionService presentacionService;
+@inject NavigationManager navegacion;
+
+
+
+<h3>@titulo</h3>
+
+<EditForm Model="presentacion" OnInvalidSubmit="OnGuardarEditarClick">
+    <DataAnnotationsValidator></DataAnnotationsValidator>
+    <div class="mb-3">
+        <label class="form-label">Id</label>
+        <InputNumber class="form-control" @bind-Value="presentacion.PresentacionId"></InputNumber>
+        <ValidationMessage For="@(() => presentacion.PresentacionId)"></ValidationMessage>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Nombre</label>
+        <InputText class="form-control" @bind-Value="presentacion.NombrePresent"></InputText>
+        <ValidationMessage For="@(() => presentacion.NombrePresent)"></ValidationMessage>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Descripcion</label>
+        <InputText class="form-control" @bind-Value="presentacion.DescripcionPresent"></InputText>
+        <ValidationMessage For="@(() => presentacion.DescripcionPresent)"></ValidationMessage>
+    </div>
+
+    <button class="btn btn-primary" type="button" @onclick="OnGuardarEditarClick">
+        @btnTexto
+    </button>
+
+    <a class="btn btn-warning" href="Presentaciones">Volver</a>
+
+
+</EditForm>
+
+
+@code {
+    [Parameter]
+    public int presentacionIdEditar { get; set; } = 0;
+
+    string titulo = string.Empty;
+    string btnTexto = string.Empty;
+
+    PresentacionDTO presentacion = new PresentacionDTO();
+    List<PresentacionDTO> listaPresentacion = new List<PresentacionDTO>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (presentacionIdEditar != 0)
+        {
+            presentacion = await presentacionService.Buscar(presentacionIdEditar);
+            btnTexto = "Actualizar presentacion";
+            titulo = "Editar presentacion";
+        }
+        else
+        {
+            btnTexto = "Guardar presentacion";
+            titulo = "Nueva presentacion";
+        }
+        listaPresentacion = await presentacionService.Lista();
+    }
+
+    private async Task OnGuardarEditarClick()
+    {
+        if (presentacionIdEditar != 0)
+            await presentacionService.Editar(presentacion); // Actualizar la presentación existente
+        else
+            await presentacionService.Guardar(presentacion); // Guardar como nueva presentación
+
+        navegacion.NavigateTo("/Presentaciones");
+    }
+
+}
